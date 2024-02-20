@@ -143,7 +143,7 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  return ~(~(x & ~y) & ~(~x & y));
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -153,7 +153,7 @@ int bitXor(int x, int y) {
  */
 int tmin(void) {
 
-  return 2;
+  return 1 << 31;
 
 }
 //2
@@ -165,7 +165,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  return x == ~(tmin());
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +176,8 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+    int IntOdd = (((((0xAA << 8) | 0xAA) << 8)| 0xAA) << 8 | 0xAA);
+    return !((x & IntOdd) ^ IntOdd);
 }
 /* 
  * negate - return -x 
@@ -186,7 +187,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +200,13 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+    int higher4Bits = x & 0xF0;
+    // int lower4Bits = x & 0xF;
+    int a = x & 0x8;
+    int b = x & 0x4;
+    int c = x & 0x2;
+    int d = x & 0x1;
+    return !((higher4Bits & 0x30) ^ 0x30) & (!a | (!b & !c));
 }
 /* 
  * conditional - same as x ? y : z 
