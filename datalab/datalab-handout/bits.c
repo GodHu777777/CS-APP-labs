@@ -165,7 +165,11 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return x == ~(tmin());
+    int t = x + 1; // Tmin
+    int sum = t + x; // -1
+    int res = ~sum;
+    res = res + !t;// !t == 0 iff x != 0xffff...
+    return !res;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -200,13 +204,20 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-    int higher4Bits = x & 0xF0;
-    // int lower4Bits = x & 0xF;
-    int a = x & 0x8;
-    int b = x & 0x4;
-    int c = x & 0x2;
-    int d = x & 0x1;
-    return !((higher4Bits & 0x30) ^ 0x30) & (!a | (!b & !c));
+    // lowest 4 bit -- A B C D
+    int A = (x & 0x8) >> 3;
+    int B = (x & 0x4) >> 2;
+    int C = (x & 0x2) >> 1;
+    //int D = x & 0x1;
+    // int A = x & 0x8;
+    // int B = x & 0x4;
+    // int C = x & 0x2;
+    // int D = x & 0x1;
+    // reset lowest 4 bit
+    int a = ((x >> 4) << 4) ^ 0x30; // a == 0 when x == 0x30
+    int b = !A;
+    int c = !(B | C);
+    return !a & (b | c);
 }
 /* 
  * conditional - same as x ? y : z 
