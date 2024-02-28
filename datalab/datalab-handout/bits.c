@@ -227,7 +227,14 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+    // multiplexer
+    int A = !!x;
+    int base2 = (A << 1) | A;
+    int base4 = (base2 << 2) | base2;
+    int base8 = (base4 << 4) | base4;
+    int base16 = (base8 << 8) | base8;
+    int base = (base16 << 16) | base16;
+    return (base & y) | (~base & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -237,7 +244,21 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+    //x <= y iff x - y <= 0
+    //x - y == x + (-y)
+    //-y = ~y + 1
+    //x <= y iff x - y <= 0, then return 1
+    int negY = ~y + 1;
+    int MSBx = x >> 31;
+    int MSBy = y >> 31;
+    
+    // int xL = x << 1;
+    // int yL = y << 1;
+    int xMinusY = x + negY;
+    // int xMinusY = xL + yL;
+    int MSB = xMinusY >> 31;
+    
+    return !MSB;
 }
 //4
 /* 
