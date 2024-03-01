@@ -168,7 +168,7 @@ int isTmax(int x) {
     int t = x + 1; // Tmin
     int sum = t + x; // -1
     int res = ~sum;
-    res = res + !t;// !t == 0 iff x != 0xffff...
+    res = res + !t;// !t == 0 i.e. x != 0xffff...
     return !res;
 }
 /* 
@@ -244,23 +244,21 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-    //x <= y iff x - y <= 0
-    //x - y == x + (-y)
-    //-y = ~y + 1
-    //x <= y iff x - y <= 0, then return 1
-    int negY = ~y + 1;
-    int MSBx = x >> 31;
-    int MSBy = y >> 31;
+
+    // x <= y i.e. y - x >= 0
+    int negX = ~x + 1;
+    int yMinusX = y + negX;
+    int MSB = (yMinusX >> 31) & 1;
+
+    // for two's complement, right shift is arithmetic
+    int MSBx = (x >> 31) & 1;
+    int MSBy = (y >> 31) & 1;
     
-    // int xL = x << 1;
-    // int yL = y << 1;
-    int xMinusY = x + negY;
-    // int xMinusY = xL + yL;
-    int MSB = xMinusY >> 31;
-    
-    return !MSB;
+    // take care of overflow case, 
+    // but this only happen when they are contrast sign
+    // so just compare both MSB 
+    return !(!MSBx & MSBy) & ((MSBx & (!MSBy)) | !MSB);
 }
-//4
 /* 
  * logicalNeg - implement the ! operator, using all of 
  *              the legal operators except !
@@ -269,8 +267,14 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 12
  *   Rating: 4 
  */
-int logicalNeg(int x) {
-  return 2;
+
+// only 0's negative equals to itself, any other number's
+// negative has contrast signed bit
+// so just do OR operation and arithmetic right shift MSB
+int logicalNeg(int x)  {
+    int neg = ~x + 1;
+    int MSB = (neg | x) >> 31;
+    return MSB + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -285,7 +289,24 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+    
+    int b16,b8,b4,b2,b1,b0;
+    int sign=x >> 31;
+    x = (sign & ~x) | (~sign & x);
+    
+    b16 = !!(x >> 16) << 4;
+    x = x >> b16;
+    b8 = !!(x >> 8) << 3;
+    x = x >> b8;
+    b4 = !!(x >> 4) << 2;
+    x = x >> b4;
+    b2 = !!(x >> 2) << 1;
+    x = x >> b2;
+    b1 = !!(x >> 1);
+    x = x >> b1;
+    b0 = x;
+
+    return b16+b8+b4+b2+b1+b0+1;
 }
 //float
 /* 
