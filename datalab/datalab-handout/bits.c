@@ -229,11 +229,7 @@ int isAsciiDigit(int x) {
 int conditional(int x, int y, int z) {
     // multiplexer
     int A = !!x;
-    int base2 = (A << 1) | A;
-    int base4 = (base2 << 2) | base2;
-    int base8 = (base4 << 4) | base4;
-    int base16 = (base8 << 8) | base8;
-    int base = (base16 << 16) | base16;
+    int base = (~A + 1);
     return (base & y) | (~base & z);
 }
 /* 
@@ -321,7 +317,31 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+
+    // since parameter passed into this function is unsigned, you can do right shift freely.
+
+    int s = (uf >> 31);
+    int e = (uf << 1) >> 24;
+    int f = (uf << 9) >> 9;
+    
+    // printf(" here: %x f: %x", e, f);
+    
+    // for special values, return itself
+    if(e == 0xFF) return uf;
+
+    // for zeros(including +0 and -0) return itself
+    if(e == 0 && f == 0) return uf;
+
+    // for 0.1*** * 2 ^ {1 - Bias} , return 1.*** * 2 ^ {1 - Bias}
+    if(e == 0) return (s << 31) + (uf << 1);
+
+    // for nomalized, just increment exponent by 1
+    if(e != 0) e = e + 1;
+
+    // printf(" then: %x\n", e);
+    
+    return (s << 31) + (e << 23) + f;
+    
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -336,7 +356,37 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+
+    // since parameter passed into this function is unsigned, you can do right shift freely.
+    
+    int s = (uf >> 31);
+    int e = (uf << 1) >> 24;
+    int f = (uf << 9) >> 9;
+    int exp;
+    int Bias = (1 << 7) - 1;
+
+    // out of range
+    if(e == 0xFF) return 1 << 31;
+
+
+    if(e != 0) f = f + (1 << 23);
+
+    if(e == 0) exp = 1 - Bias;
+    else exp = e - Bias;
+    // printf("%d ", e);
+    
+    // p0 ffffff82rintf("%d\n", exp);
+    
+    if(exp < -1) return 0;
+    
+    // out of range
+    if(exp > 31) return 1 << 31;
+
+    f = f >> (23 - exp);
+
+    if(s == 1) f = ~f + 1;
+
+    return f;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -352,5 +402,16 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    int Bias = (1 << 7) - 1;
+    unsigned inf = 0x7f800000;
+    int e;
+    // printf("h\n");
+    
+    // exclude special cases
+    if(x < 1 - Bias) return 0;
+    if(x > (1 << 8) - 1 - Bias) return inf;
+    
+    e = x + Bias;
+
+    return e << 23;
 }
