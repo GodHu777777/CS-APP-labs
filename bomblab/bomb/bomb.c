@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     input = read_line();
     phase_4(input);
     phase_defused();
-    printf("So you got that one.  Try this one.\n");
+    printf("So you got that one.  Try this  one.\n");
     
     /* Round and 'round in memory we go, where we stop, the bomb blows! */
     input = read_line();
